@@ -1,0 +1,9 @@
+.venv/
+!.venv/requirements.txt
+data/
+
+__pycache__
+
+# Exclude Example Task - BinaryRainfallPrediction
+!tasks/BinaryRainfallPrediction
+!tasks/BinaryRainfallPrediction/data

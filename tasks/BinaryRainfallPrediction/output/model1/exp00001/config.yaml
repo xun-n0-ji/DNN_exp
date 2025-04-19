@@ -1,0 +1,18 @@
+data:
+  path: tasks/BinaryRainfallPrediction/data/train.csv
+  train_ratio: 0.8
+model:
+  dropout_rate: 0.2
+  hidden_dims:
+  - 32
+  - 13
+  input_dim: 13
+  name: model1
+  output_dim: 1
+output:
+  dir: tasks/BinaryRainfallPrediction/output
+training:
+  batch_size: 16
+  epochs: 10
+  learning_rate: 0.001
+  weight_decay: 0.0001
