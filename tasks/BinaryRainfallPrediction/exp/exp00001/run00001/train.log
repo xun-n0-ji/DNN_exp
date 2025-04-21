@@ -1,0 +1,149 @@
+2025-04-21 00:59:30,855 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:05:12,731 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:20:38,489 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:21:30,438 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:27:32,615 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:29:25,208 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:29:31,672 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5489
+2025-04-21 01:30:20,525 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:30:26,781 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.6027
+2025-04-21 01:31:04,662 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:31:11,021 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5689
+2025-04-21 01:31:17,232 - RainfallTrainer - INFO - Validation, Val Loss: 0.4265, Val Accuracy: 0.8402
+2025-04-21 01:31:17,238 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 01:31:23,666 - RainfallTrainer - INFO - Epoch 2/50, Train Loss: 0.3767
+2025-04-21 01:31:30,011 - RainfallTrainer - INFO - Validation, Val Loss: 0.3582, Val Accuracy: 0.8607
+2025-04-21 01:31:36,993 - RainfallTrainer - INFO - Epoch 3/50, Train Loss: 0.3486
+2025-04-21 01:31:44,048 - RainfallTrainer - INFO - Validation, Val Loss: 0.3608, Val Accuracy: 0.8630
+2025-04-21 01:36:10,858 - RainfallTrainer - INFO - Start training...
+2025-04-21 01:36:16,650 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5475
+2025-04-21 01:36:22,175 - RainfallTrainer - INFO - Validation, Val Loss: 0.4111, Val Accuracy: 0.8493
+2025-04-21 01:36:22,180 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 21:36:17,850 - RainfallTrainer - INFO - Start training...
+2025-04-21 21:36:25,811 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5851
+2025-04-21 21:36:32,955 - RainfallTrainer - INFO - Validation, Val Loss: 0.4560, Val Accuracy: 0.7968
+2025-04-21 21:36:32,963 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 21:36:40,555 - RainfallTrainer - INFO - Epoch 2/50, Train Loss: 0.3874
+2025-04-21 21:36:47,762 - RainfallTrainer - INFO - Validation, Val Loss: 0.3444, Val Accuracy: 0.8790
+2025-04-21 21:36:54,947 - RainfallTrainer - INFO - Epoch 3/50, Train Loss: 0.3573
+2025-04-21 21:37:02,132 - RainfallTrainer - INFO - Validation, Val Loss: 0.3336, Val Accuracy: 0.8790
+2025-04-21 21:37:09,725 - RainfallTrainer - INFO - Epoch 4/50, Train Loss: 0.3533
+2025-04-21 21:37:16,885 - RainfallTrainer - INFO - Validation, Val Loss: 0.3289, Val Accuracy: 0.8767
+2025-04-21 21:41:03,560 - RainfallTrainer - INFO - Start training...
+2025-04-21 21:41:10,908 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.6099
+2025-04-21 21:41:18,346 - RainfallTrainer - INFO - Validation, Val Loss: 0.4460, Val Accuracy: 0.8082
+2025-04-21 21:41:18,354 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 21:41:27,841 - RainfallTrainer - INFO - Epoch 2/50, Train Loss: 0.3956
+2025-04-21 21:44:37,636 - RainfallTrainer - INFO - Start training...
+2025-04-21 21:44:45,701 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5497
+2025-04-21 21:44:52,980 - RainfallTrainer - INFO - Validation, Val Loss: 0.4218, Val Accuracy: 0.8562
+2025-04-21 21:44:52,987 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 21:45:00,133 - RainfallTrainer - INFO - Epoch 2/50, Train Loss: 0.3772
+2025-04-21 21:45:07,086 - RainfallTrainer - INFO - Validation, Val Loss: 0.3472, Val Accuracy: 0.8676
+2025-04-21 21:45:14,646 - RainfallTrainer - INFO - Epoch 3/50, Train Loss: 0.3535
+2025-04-21 21:45:22,134 - RainfallTrainer - INFO - Validation, Val Loss: 0.3434, Val Accuracy: 0.8699
+2025-04-21 21:45:29,656 - RainfallTrainer - INFO - Epoch 4/50, Train Loss: 0.3505
+2025-04-21 21:45:37,065 - RainfallTrainer - INFO - Validation, Val Loss: 0.3424, Val Accuracy: 0.8653
+2025-04-21 21:47:14,668 - RainfallTrainer - INFO - Start training...
+2025-04-21 21:47:22,367 - RainfallTrainer - INFO - Epoch 1/50, Train Loss: 0.5468
+2025-04-21 21:47:29,582 - RainfallTrainer - INFO - Validation, Val Loss: 0.4178, Val Accuracy: 0.8333
+2025-04-21 21:47:29,589 - RainfallTrainer - INFO - Epoch 1: Saved the cirrent best model.
+2025-04-21 21:47:37,483 - RainfallTrainer - INFO - Epoch 2/50, Train Loss: 0.3727
+2025-04-21 21:47:45,118 - RainfallTrainer - INFO - Validation, Val Loss: 0.3561, Val Accuracy: 0.8584
+2025-04-21 21:47:52,391 - RainfallTrainer - INFO - Epoch 3/50, Train Loss: 0.3489
+2025-04-21 21:47:59,501 - RainfallTrainer - INFO - Validation, Val Loss: 0.3466, Val Accuracy: 0.8630
+2025-04-21 21:48:06,836 - RainfallTrainer - INFO - Epoch 4/50, Train Loss: 0.3429
+2025-04-21 21:48:13,882 - RainfallTrainer - INFO - Validation, Val Loss: 0.3440, Val Accuracy: 0.8653
+2025-04-21 21:48:21,123 - RainfallTrainer - INFO - Epoch 5/50, Train Loss: 0.3445
+2025-04-21 21:48:27,823 - RainfallTrainer - INFO - Validation, Val Loss: 0.3439, Val Accuracy: 0.8653
+2025-04-21 21:48:34,920 - RainfallTrainer - INFO - Epoch 6/50, Train Loss: 0.3387
+2025-04-21 21:48:41,878 - RainfallTrainer - INFO - Validation, Val Loss: 0.3424, Val Accuracy: 0.8607
+2025-04-21 21:48:48,935 - RainfallTrainer - INFO - Epoch 7/50, Train Loss: 0.3442
+2025-04-21 21:48:56,095 - RainfallTrainer - INFO - Validation, Val Loss: 0.3456, Val Accuracy: 0.8653
+2025-04-21 21:49:03,571 - RainfallTrainer - INFO - Epoch 8/50, Train Loss: 0.3390
+2025-04-21 21:49:10,803 - RainfallTrainer - INFO - Validation, Val Loss: 0.3459, Val Accuracy: 0.8676
+2025-04-21 21:49:17,882 - RainfallTrainer - INFO - Epoch 9/50, Train Loss: 0.3363
+2025-04-21 21:49:24,796 - RainfallTrainer - INFO - Validation, Val Loss: 0.3477, Val Accuracy: 0.8653
+2025-04-21 21:49:32,614 - RainfallTrainer - INFO - Epoch 10/50, Train Loss: 0.3328
+2025-04-21 21:49:39,753 - RainfallTrainer - INFO - Validation, Val Loss: 0.3427, Val Accuracy: 0.8584
+2025-04-21 21:49:47,086 - RainfallTrainer - INFO - Epoch 11/50, Train Loss: 0.3354
+2025-04-21 21:49:54,555 - RainfallTrainer - INFO - Validation, Val Loss: 0.3448, Val Accuracy: 0.8607
+2025-04-21 21:50:01,564 - RainfallTrainer - INFO - Epoch 12/50, Train Loss: 0.3329
+2025-04-21 21:50:08,773 - RainfallTrainer - INFO - Validation, Val Loss: 0.3497, Val Accuracy: 0.8607
+2025-04-21 21:50:16,194 - RainfallTrainer - INFO - Epoch 13/50, Train Loss: 0.3309
+2025-04-21 21:50:23,329 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8653
+2025-04-21 21:50:31,060 - RainfallTrainer - INFO - Epoch 14/50, Train Loss: 0.3300
+2025-04-21 21:50:38,280 - RainfallTrainer - INFO - Validation, Val Loss: 0.3472, Val Accuracy: 0.8653
+2025-04-21 21:50:45,463 - RainfallTrainer - INFO - Epoch 15/50, Train Loss: 0.3387
+2025-04-21 21:50:52,619 - RainfallTrainer - INFO - Validation, Val Loss: 0.3459, Val Accuracy: 0.8630
+2025-04-21 21:51:00,239 - RainfallTrainer - INFO - Epoch 16/50, Train Loss: 0.3296
+2025-04-21 21:51:07,503 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:51:14,719 - RainfallTrainer - INFO - Epoch 17/50, Train Loss: 0.3312
+2025-04-21 21:51:22,713 - RainfallTrainer - INFO - Validation, Val Loss: 0.3496, Val Accuracy: 0.8562
+2025-04-21 21:51:30,282 - RainfallTrainer - INFO - Epoch 18/50, Train Loss: 0.3326
+2025-04-21 21:51:37,269 - RainfallTrainer - INFO - Validation, Val Loss: 0.3461, Val Accuracy: 0.8630
+2025-04-21 21:51:44,525 - RainfallTrainer - INFO - Epoch 19/50, Train Loss: 0.3331
+2025-04-21 21:51:52,085 - RainfallTrainer - INFO - Validation, Val Loss: 0.3459, Val Accuracy: 0.8607
+2025-04-21 21:52:00,192 - RainfallTrainer - INFO - Epoch 20/50, Train Loss: 0.3290
+2025-04-21 21:52:07,626 - RainfallTrainer - INFO - Validation, Val Loss: 0.3464, Val Accuracy: 0.8630
+2025-04-21 21:52:15,360 - RainfallTrainer - INFO - Epoch 21/50, Train Loss: 0.3287
+2025-04-21 21:52:23,254 - RainfallTrainer - INFO - Validation, Val Loss: 0.3463, Val Accuracy: 0.8607
+2025-04-21 21:52:46,430 - RainfallTrainer - INFO - Epoch 22/50, Train Loss: 0.3276
+2025-04-21 21:53:04,112 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8630
+2025-04-21 21:53:11,724 - RainfallTrainer - INFO - Epoch 23/50, Train Loss: 0.3282
+2025-04-21 21:53:18,943 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8607
+2025-04-21 21:53:26,451 - RainfallTrainer - INFO - Epoch 24/50, Train Loss: 0.3313
+2025-04-21 21:53:33,986 - RainfallTrainer - INFO - Validation, Val Loss: 0.3469, Val Accuracy: 0.8607
+2025-04-21 21:53:41,388 - RainfallTrainer - INFO - Epoch 25/50, Train Loss: 0.3308
+2025-04-21 21:53:48,546 - RainfallTrainer - INFO - Validation, Val Loss: 0.3473, Val Accuracy: 0.8630
+2025-04-21 21:53:55,982 - RainfallTrainer - INFO - Epoch 26/50, Train Loss: 0.3269
+2025-04-21 21:54:03,100 - RainfallTrainer - INFO - Validation, Val Loss: 0.3471, Val Accuracy: 0.8607
+2025-04-21 21:54:10,725 - RainfallTrainer - INFO - Epoch 27/50, Train Loss: 0.3267
+2025-04-21 21:54:18,188 - RainfallTrainer - INFO - Validation, Val Loss: 0.3473, Val Accuracy: 0.8630
+2025-04-21 21:54:25,263 - RainfallTrainer - INFO - Epoch 28/50, Train Loss: 0.3251
+2025-04-21 21:54:31,962 - RainfallTrainer - INFO - Validation, Val Loss: 0.3472, Val Accuracy: 0.8607
+2025-04-21 21:54:39,136 - RainfallTrainer - INFO - Epoch 29/50, Train Loss: 0.3349
+2025-04-21 21:54:45,859 - RainfallTrainer - INFO - Validation, Val Loss: 0.3473, Val Accuracy: 0.8607
+2025-04-21 21:54:52,826 - RainfallTrainer - INFO - Epoch 30/50, Train Loss: 0.3313
+2025-04-21 21:54:59,527 - RainfallTrainer - INFO - Validation, Val Loss: 0.3473, Val Accuracy: 0.8630
+2025-04-21 21:55:06,580 - RainfallTrainer - INFO - Epoch 31/50, Train Loss: 0.3296
+2025-04-21 21:55:13,332 - RainfallTrainer - INFO - Validation, Val Loss: 0.3471, Val Accuracy: 0.8630
+2025-04-21 21:55:20,589 - RainfallTrainer - INFO - Epoch 32/50, Train Loss: 0.3312
+2025-04-21 21:55:27,444 - RainfallTrainer - INFO - Validation, Val Loss: 0.3472, Val Accuracy: 0.8630
+2025-04-21 21:55:34,594 - RainfallTrainer - INFO - Epoch 33/50, Train Loss: 0.3309
+2025-04-21 21:55:41,277 - RainfallTrainer - INFO - Validation, Val Loss: 0.3471, Val Accuracy: 0.8630
+2025-04-21 21:55:48,260 - RainfallTrainer - INFO - Epoch 34/50, Train Loss: 0.3276
+2025-04-21 21:55:55,006 - RainfallTrainer - INFO - Validation, Val Loss: 0.3473, Val Accuracy: 0.8630
+2025-04-21 21:56:02,040 - RainfallTrainer - INFO - Epoch 35/50, Train Loss: 0.3288
+2025-04-21 21:56:08,824 - RainfallTrainer - INFO - Validation, Val Loss: 0.3471, Val Accuracy: 0.8630
+2025-04-21 21:56:15,895 - RainfallTrainer - INFO - Epoch 36/50, Train Loss: 0.3293
+2025-04-21 21:56:23,079 - RainfallTrainer - INFO - Validation, Val Loss: 0.3472, Val Accuracy: 0.8630
+2025-04-21 21:56:30,213 - RainfallTrainer - INFO - Epoch 37/50, Train Loss: 0.3281
+2025-04-21 21:56:36,995 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8630
+2025-04-21 21:56:44,037 - RainfallTrainer - INFO - Epoch 38/50, Train Loss: 0.3272
+2025-04-21 21:56:50,790 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8630
+2025-04-21 21:56:57,778 - RainfallTrainer - INFO - Epoch 39/50, Train Loss: 0.3226
+2025-04-21 21:57:04,565 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:57:11,809 - RainfallTrainer - INFO - Epoch 40/50, Train Loss: 0.3284
+2025-04-21 21:57:18,865 - RainfallTrainer - INFO - Validation, Val Loss: 0.3474, Val Accuracy: 0.8630
+2025-04-21 21:57:26,339 - RainfallTrainer - INFO - Epoch 41/50, Train Loss: 0.3209
+2025-04-21 21:57:33,032 - RainfallTrainer - INFO - Validation, Val Loss: 0.3476, Val Accuracy: 0.8630
+2025-04-21 21:57:40,311 - RainfallTrainer - INFO - Epoch 42/50, Train Loss: 0.3297
+2025-04-21 21:57:47,017 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:58:02,838 - RainfallTrainer - INFO - Epoch 43/50, Train Loss: 0.3342
+2025-04-21 21:58:17,261 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:58:32,539 - RainfallTrainer - INFO - Epoch 44/50, Train Loss: 0.3299
+2025-04-21 21:58:47,122 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:59:01,892 - RainfallTrainer - INFO - Epoch 45/50, Train Loss: 0.3255
+2025-04-21 21:59:16,198 - RainfallTrainer - INFO - Validation, Val Loss: 0.3476, Val Accuracy: 0.8630
+2025-04-21 21:59:30,911 - RainfallTrainer - INFO - Epoch 46/50, Train Loss: 0.3336
+2025-04-21 21:59:45,349 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 21:59:59,917 - RainfallTrainer - INFO - Epoch 47/50, Train Loss: 0.3227
+2025-04-21 22:00:14,634 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 22:00:29,312 - RainfallTrainer - INFO - Epoch 48/50, Train Loss: 0.3281
+2025-04-21 22:00:43,698 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 22:00:58,191 - RainfallTrainer - INFO - Epoch 49/50, Train Loss: 0.3236
+2025-04-21 22:01:12,305 - RainfallTrainer - INFO - Validation, Val Loss: 0.3475, Val Accuracy: 0.8630
+2025-04-21 22:01:28,527 - RainfallTrainer - INFO - Epoch 50/50, Train Loss: 0.3267
+2025-04-21 22:01:43,495 - RainfallTrainer - INFO - Validation, Val Loss: 0.3476, Val Accuracy: 0.8630
+2025-04-21 22:01:43,508 - RainfallTrainer - INFO - Training completed after 50 epochs.
