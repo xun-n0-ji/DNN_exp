@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 import os
 import yaml
+import polars as pl
 import torch
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 class Trainer(ABC):
     """
@@ -31,6 +32,8 @@ class Trainer(ABC):
         self.criterion = self._init_criterion()
         self.optimizer = self._init_optimizer()
         self.scheduler = self._init_scheduler()
+
+        self._init_metrics_history()
         
     def _setup_logger(self) -> logging.Logger:
         """ロガーの設定"""
@@ -38,7 +41,7 @@ class Trainer(ABC):
         logger.setLevel(logging.INFO)
         
         # ファイルハンドラ
-        os.makedirs(self.exp_dir, exist_ok=True)
+        #os.makedirs(self.exp_dir, exist_ok=True)
         file_handler = logging.FileHandler(os.path.join(self.exp_dir, 'train.log'))
         file_handler.setLevel(logging.INFO)
         
@@ -68,6 +71,68 @@ class Trainer(ABC):
         """
         raise NotImplementedError("サブクラスで_init_modelを実装する必要があります")
     
+    def _init_metrics_history(self):
+        """
+        評価結果を記録するDataFrameを初期化します。
+        """
+        num_epochs = self.config['training'].get('epochs', 100)
+        
+        # 基本のカラム
+        columns = {'epoch': list(range(1, num_epochs + 1))}
+        
+        # 評価指標ごとにカラムを追加
+        metrics_info = self.get_metrics_info()
+        for metric in metrics_info:
+            metric_name = metric['name']
+            for mode in metric['modes']:
+                column_name = f'{mode}_{metric_name}'
+                columns[column_name] = [None] * num_epochs
+        
+        # DataFrameの作成
+        self.metrics_history = pl.DataFrame(columns)
+
+    def _update_metrics_history(self, metrics: Dict[str, float], epoch: int, mode: str):
+        """
+        メトリクス履歴を更新します。
+        
+        Args:
+            metrics: 更新するメトリクス
+            epoch: 現在のエポック
+            mode: 'train'または'val'
+        """
+        # 更新する行のインデックスを計算（0-indexed）
+        row_idx = epoch - 1
+        
+        # 更新するデータの辞書を作成
+        update_dict = {}
+        
+        # 定義された指標情報を使用して適切なカラムを更新
+        metrics_info = self.get_metrics_info()
+        for metric in metrics_info:
+            metric_name = metric['name']
+            if mode in metric['modes'] and metric_name in metrics:
+                column_name = f'{mode}_{metric_name}'
+                # 該当する行のみを更新
+                self.metrics_history = self.metrics_history.with_columns(
+                    pl.when(pl.col('epoch') == epoch)
+                    .then(pl.lit(metrics[metric_name]))
+                    .otherwise(pl.col(column_name))
+                    .alias(column_name)
+                )
+
+    @abstractmethod
+    def get_metrics_info(self) -> List[Dict[str, Any]]:
+        """
+        トラッキングする評価指標の情報を返します。
+        
+        Returns:
+            各評価指標に関する情報のリスト。各要素は辞書で以下のキーを含む：
+            - name: 指標の名前（例: 'loss', 'accuracy'）
+            - modes: この指標を記録するモード（例: ['train', 'val']）
+            - (オプション) display_name: 表示用の名前
+        """
+        raise NotImplementedError("サブクラスでget_metrics_infoを実装する必要があります")
+
     def _init_criterion(self):
         """
         損失関数を初期化するメソッド。
@@ -123,8 +188,8 @@ class Trainer(ABC):
             return None
         
         if not hasattr(torch.optim.lr_scheduler, scheduler_name):
-            self.logger.error(f"スケジューラ {scheduler_name} は PyTorch に存在しません")
-            raise ValueError(f"スケジューラ {scheduler_name} は PyTorch に存在しません")
+            self.logger.error(f'Scheduler "{scheduler_name}" does not exist in PyTorch.')
+            raise ValueError(f'Scheduler "{scheduler_name}" does not exist in PyTorch.')
         
         scheduler_class = getattr(torch.optim.lr_scheduler, scheduler_name)
         return scheduler_class(self.optimizer, **scheduler_params)
@@ -141,7 +206,7 @@ class Trainer(ABC):
         Returns:
             エポックの学習結果（損失など）
         """
-        raise NotImplementedError("サブクラスでtrain_epochを実装する必要があります")
+        raise NotImplementedError('Need to implement "train_epoch" in subclass.')
     
     @abstractmethod
     def validate(self, dataloader):
@@ -155,7 +220,7 @@ class Trainer(ABC):
         Returns:
             検証結果（損失、精度など）
         """
-        raise NotImplementedError("サブクラスでvalidateを実装する必要があります")
+        raise NotImplementedError('Need to implement "validate" in subclass.')
     
     def save_checkpoint(self, epoch: int, metrics: Dict[str, float], is_best: bool = False):
         """
@@ -188,7 +253,7 @@ class Trainer(ABC):
         # 最良のモデルとして保存
         if is_best:
             torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint_best.pth'))
-            self.logger.info(f"Epoch {epoch}: 最良のモデルを保存しました")
+            self.logger.info(f"Epoch {epoch}: Saved the cirrent best model.")
     
     def load_checkpoint(self, checkpoint_path: str):
         """
@@ -201,8 +266,8 @@ class Trainer(ABC):
             読み込んだチェックポイント情報
         """
         if not os.path.exists(checkpoint_path):
-            self.logger.error(f"チェックポイントファイル {checkpoint_path} が見つかりません")
-            raise FileNotFoundError(f"チェックポイントファイル {checkpoint_path} が見つかりません")
+            self.logger.error(f"Could not find {checkpoint_path}.")
+            raise FileNotFoundError(f"Could not found {checkpoint_path}.")
         
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -223,35 +288,67 @@ class Trainer(ABC):
             num_epochs: 学習エポック数
             eval_interval: 検証を行う間隔（エポック数）
         """
-        self.logger.info("学習を開始します")
+        self.logger.info("Start training...")
         
-        best_val_metric = float('inf')  # 最小化する場合
-        # best_val_metric = float('-inf')  # 最大化する場合
+        mode = self.config['training']['optimization_mode']
+        if mode == 'min':
+            best_val_metric = float('inf')
+        elif mode == 'max':
+            best_val_metric = float('-inf')
+        else:
+            raise ValueError(f"Invalid optimization_mode: {mode}. Expected 'min' or 'max'.")
         
         for epoch in range(1, num_epochs + 1):
             # 学習
             train_metrics = self.train_epoch(train_dataloader)
-            train_loss = train_metrics.get('loss', 0.0)
-            self.logger.info(f"Epoch {epoch}/{num_epochs}, Train Loss: {train_loss:.4f}")
+            self._update_metrics_history(train_metrics, epoch, 'train')
             
-            # スケジューラの更新
-            if self.scheduler is not None:
-                self.scheduler.step()
+            # ログ出力
+            log_message = f"Epoch {epoch}/{num_epochs}, Train Loss: {train_metrics['loss']:.4f}"
+            self.logger.info(log_message)
             
             # 検証
             if epoch % eval_interval == 0:
                 val_metrics = self.validate(val_dataloader)
-                val_loss = val_metrics.get('loss', 0.0)
+                self._update_metrics_history(val_metrics, epoch, 'val')
                 
-                # ここではval_lossを最小化する例を示していますが、
-                # 他の指標（accuracyなど）を最大化したい場合は条件を変更してください
-                is_best = val_loss < best_val_metric
-                if is_best:
-                    best_val_metric = val_loss
+                # 検証結果のログ出力
+                log_message = f"Validation, Val Loss: {val_metrics['loss']:.4f}"
+                if 'accuracy' in val_metrics:
+                    log_message += f", Val Accuracy: {val_metrics['accuracy']:.4f}"
+                self.logger.info(log_message)
                 
-                self.logger.info(f"Epoch {epoch}/{num_epochs}, Val Loss: {val_loss:.4f}")
+                # スケジューラの更新
+                if self.scheduler is not None:
+                    # ReduceLROnPlateauかどうかを確認
+                    if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                        # 監視する指標を渡す（通常は検証ロス）
+                        self.scheduler.step(val_metrics['loss'])
+                    else:
+                        self.scheduler.step()
                 
-                # チェックポイントの保存
-                self.save_checkpoint(epoch, {**train_metrics, **val_metrics}, is_best)
+                # 最良モデルの判断
+                metric_name = 'loss'  # 基本は損失で判断
+                watch_metric = val_metrics.get(metric_name, val_metrics['loss'])
+                
+                is_best = False
+                if (mode == 'min' and watch_metric < best_val_metric) or \
+                   (mode == 'max' and watch_metric > best_val_metric):
+                    best_val_metric = watch_metric
+                    is_best = True
+                
+                # 設定に応じてモデルを保存
+                save_best = self.config['training'].get('save_best', True)
+                if save_best and is_best:
+                    self.save_checkpoint(epoch, val_metrics, is_best=True)
+                
+                save_last = self.config['training'].get('save_last', True)
+                if save_last:
+                    self.save_checkpoint(epoch, val_metrics, is_best=False)
+            else:
+                # 検証を行わない場合でもスケジューラを更新（ReduceLROnPlateau以外）
+                if self.scheduler is not None and not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                    self.scheduler.step()
         
-        self.logger.info("学習が完了しました")
+        # 訓練終了時の処理
+        self.logger.info(f"Training completed after {num_epochs} epochs.")

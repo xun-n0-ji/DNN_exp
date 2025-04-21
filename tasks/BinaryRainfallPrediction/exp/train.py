@@ -1,38 +1,47 @@
 import os
+from pathlib import Path
+from typing import Dict, Any, Tuple, List
+from importlib import import_module
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import pandas as pd
+import polars as pl
 import numpy as np
 from torch.utils.data import DataLoader, Dataset, random_split
-from typing import Dict, Any, Tuple, List
+import yaml
 from sklearn.preprocessing import StandardScaler
 
-from trainer import Trainer
-from tasks.BinaryRainfallPrediction.models.rainfall_model import RainfallPredictionModel
+from base import Trainer
 
-class RainfallDataset(Dataset): # いらんかも
+exp_no = '00001'
+run_no = '00001'
+exp_dir = Path(__file__).parent / f'exp{exp_no}' / f'run{run_no}'
+config_filepath = exp_dir / 'config.yaml'
+
+class RainfallDataset(Dataset):
     """
     降雨予測のためのデータセット
     """
     def __init__(self, csv_file, transform=None):
-        """
-        データセットの初期化
-        
-        Args:
-            csv_file: CSVファイルのパス
-            transform: 特徴量変換関数
-        """
-        self.df = pd.read_csv(csv_file)
+        self.df = pl.read_csv(csv_file)
         self.transform = transform
         
         # 日付を除外して特徴量とターゲットを抽出
-        self.features = self.df.drop(['day', 'rainfall'], axis=1).values
-        self.targets = self.df['rainfall'].values
+        # カラム名を確認して、正しく特徴量とターゲットを分離
+        self.features = self.df.drop(['id', 'day', 'rainfall']).to_numpy()
+        self.targets = self.df['rainfall'].to_numpy()
+        
+        # 特徴量の次元数を記録（モデル初期化時に使用）
+        self.input_dim = self.features.shape[1]
         
         # 特徴量のスケーリング
         if self.transform:
-            self.features = self.transform.fit_transform(self.features)
+            # transform が fit_transform されているか確認
+            if hasattr(self.transform, 'mean_'):
+                self.features = self.transform.transform(self.features)
+            else:
+                self.features = self.transform.fit_transform(self.features)
         
     def __len__(self):
         return len(self.df)
@@ -56,10 +65,22 @@ class RainfallTrainer(Trainer):
         Returns:
             初期化されたモデル
         """
-        model_config = self.config.get('model', {})
+        model_config = self.config
+        module = import_module(model_config['model']['module'])
+        model_name = model_config['model']['name']
+        model_class = getattr(module, model_name)
         
-        # ここでは特定のモデルクラスを直接使用
-        return RainfallPredictionModel.from_config(model_config)
+        # データセットから入力次元を自動取得
+        dataset_config = self.config.get('dataset', {})
+        data_path = dataset_config.get('data_path', 'tasks/BinaryRainfallPrediction/data/train.csv')
+        temp_dataset = RainfallDataset(data_path)
+        input_dim = temp_dataset.input_dim
+        
+        # 設定ファイルの入力次元を更新
+        self.config['model']['params']['input_dim'] = input_dim
+        
+        # 更新した設定でモデルを初期化
+        return model_class.from_config(model_config)
     
     def create_dataloaders(self) -> Tuple[DataLoader, DataLoader]:
         """
@@ -104,7 +125,7 @@ class RainfallTrainer(Trainer):
         )
         
         return train_loader, val_loader
-    
+
     def train_epoch(self, dataloader) -> Dict[str, float]:
         """
         1エポックの学習を行います。
@@ -153,10 +174,22 @@ class RainfallTrainer(Trainer):
         }
         
         return metrics
+
+    def get_metrics_info(self) -> List[Dict[str, Any]]:
+        """
+        トラッキングする評価指標の情報を返す。
+        """
+        return [
+            {'name': 'loss', 'modes': ['train', 'val'], 'display_name': 'Loss'},
+            {'name': 'accuracy', 'modes': ['train', 'val'], 'display_name': 'Accuracy'},
+            {'name': 'precision', 'modes': ['val'], 'display_name': 'Precision'},
+            {'name': 'recall', 'modes': ['val'], 'display_name': 'Recall'},
+            {'name': 'f1', 'modes': ['val'], 'display_name': 'F1 Score'}
+        ]
     
     def validate(self, dataloader) -> Dict[str, float]:
         """
-        検証を行います。
+        検証を行う。
         
         Args:
             dataloader: 検証データのデータローダー
@@ -218,7 +251,7 @@ class RainfallTrainer(Trainer):
     
     def save_predictions(self, dataloader, output_path: str):
         """
-        予測結果をCSVファイルに保存します。
+        予測結果をCSVファイルに保存する。
         
         Args:
             dataloader: データローダー
@@ -242,7 +275,7 @@ class RainfallTrainer(Trainer):
                 all_preds.extend(preds)
         
         # 予測結果をDataFrameに変換
-        df = pd.DataFrame({
+        df = pl.DataFrame({
             'predicted_probability': np.array(all_probs).flatten(),
             'predicted_class': np.array(all_preds).flatten()
         })
@@ -252,3 +285,13 @@ class RainfallTrainer(Trainer):
         
         # CSVファイルに保存
         df.to_csv(output_path, index=False) 
+
+def main():
+    with open(config_filepath, 'r', encoding='utf-8') as f:
+        config = yaml.load(f, Loader=yaml.SafeLoader)
+    trainer = RainfallTrainer(config, exp_dir)
+    train_dataloader, val_dataloader = trainer.create_dataloaders()
+    trainer.train(train_dataloader, val_dataloader, config['training']['epochs'], config['training']['eval_interval'])
+
+if __name__ == '__main__':
+    main()

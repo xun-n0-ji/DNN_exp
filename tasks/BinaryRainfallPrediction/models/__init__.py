@@ -1,4 +1,4 @@
 # BinaryRainfallPrediction モデルパッケージ初期化
-from .rainfall_model import RainfallPredictionModel
+from .rainfall_model import RainfallModel
 
-__all__ = ['RainfallPredictionModel'] 
+__all__ = ['RainfallModel'] 

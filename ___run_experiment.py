@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, Type
 
 from experiment import Experiment
 from config_utils import ConfigManager
-from trainer import Trainer
+from base import Trainer
 
 def parse_args():
     """

@@ -5,7 +5,7 @@ model:
   dropout_rate: 0.2
   hidden_dims:
   - 32
-  - 13
+  - 16
   input_dim: 13
   name: model1
   output_dim: 1
