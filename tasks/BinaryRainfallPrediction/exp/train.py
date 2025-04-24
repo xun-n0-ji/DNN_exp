@@ -291,7 +291,7 @@ def main():
         config = yaml.load(f, Loader=yaml.SafeLoader)
     trainer = RainfallTrainer(config, exp_dir)
     train_dataloader, val_dataloader = trainer.create_dataloaders()
-    trainer.train(train_dataloader, val_dataloader, config['training']['epochs'], config['training']['eval_interval'])
+    trainer.train(train_dataloader, val_dataloader, config['training']['epochs'], config['training']['eval_interval'], config['training']['checkpoint_interval'])
 
 if __name__ == '__main__':
     main()

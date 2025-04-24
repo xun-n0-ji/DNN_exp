@@ -9,3 +9,4 @@ __pycache__
 !tasks/BinaryRainfallPrediction/data
 
 *.pth
+*.log

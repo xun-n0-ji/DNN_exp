@@ -278,7 +278,7 @@ class Trainer(ABC):
         
         return checkpoint
     
-    def train(self, train_dataloader, val_dataloader, num_epochs: int, eval_interval: int = 1):
+    def train(self, train_dataloader, val_dataloader, num_epochs: int, eval_interval: int = 1, checkpoint_interval: int = 10):
         """
         学習の実行メソッド。
         
@@ -308,7 +308,7 @@ class Trainer(ABC):
             self.logger.info(log_message)
             
             # 検証
-            if epoch % eval_interval == 0:
+            if epoch % eval_interval == 0 or epoch % checkpoint_interval == 0:
                 val_metrics = self.validate(val_dataloader)
                 self._update_metrics_history(val_metrics, epoch, 'val')
                 
