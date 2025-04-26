@@ -76,38 +76,38 @@ class Predictor(ABC):
     @abstractmethod
     def _init_model(self) -> torch.nn.Module:
         """
-        モデルを初期化するメソッド。
-        
+        Method to initialize a model.
+
         Returns:
-            初期化されたモデル
+            The initialized model.
         """
         raise NotImplementedError('Need to implement "_init_model" in subclass')
     
     def load_checkpoint(self, checkpoint_path: str, resume_training: bool = False):
         """
-        チェックポイントを読み込むメソッド。
+        The method to read the checkpoint.
         
         Args:
-            checkpoint_path: チェックポイントファイルのパス
+            checkpoint_path: Checkpoint file path
             
         Returns:
-            読み込んだチェックポイント情報
+            Loaded checkpoint information
         """
         if not Path(checkpoint_path).exists:
             self.logger.error(f"Could not find {checkpoint_path}.")
             raise FileNotFoundError(f"Could not find {checkpoint_path}.")
         
-        # 訓練再開の場合は全情報を読み込み、そうでなければ重みのみ
+        # If training is resumed, read all information, otherwise only weights
         checkpoint = torch.load(
             checkpoint_path, 
             map_location=self.device,
             weights_only=not resume_training
         )
         
-        # モデルの重みは常に読み込む
+        # Model weights are always loaded
         self.model.load_state_dict(checkpoint['model_state_dict'])
         
-        # 訓練再開の場合はオプティマイザとスケジューラの状態も読み込む
+        # If training is resumed, also read the optimizer and scheduler states.
         if resume_training and hasattr(self, 'optimizer'):
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             if 'scheduler_state_dict' in checkpoint and hasattr(self, 'scheduler') and self.scheduler is not None:
@@ -115,15 +115,14 @@ class Predictor(ABC):
         return checkpoint
     
     @abstractmethod
-    def predict(self, dataloader, save_results: bool = True):
+    def predict(self, dataloader):
         """
-        モデルの評価を行うメソッド。
+        The method for evaluating the model.
         
         Args:
-            dataloader: 評価データのデータローダー
-            save_results: 結果をファイルに保存するかどうか
+            dataloader: Dataloader for evaluation data
             
         Returns:
-            評価結果の辞書
+            Evaluation results dictionary
         """
         raise NotImplementedError('Need to implement "predict" in subclass')

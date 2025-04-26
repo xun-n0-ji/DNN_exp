@@ -4,30 +4,30 @@ from typing import Dict, Any, List, Optional
 
 class OptimizerFactory:
     """
-    オプティマイザを作成するファクトリクラス
+    A factory class for creating optimizers
     """
     
     @staticmethod
     def create(params, config: Dict[str, Any]) -> optim.Optimizer:
         """
-        設定に基づいてオプティマイザを作成します。
+        Create an optimizer based on your settings.
         
         Args:
-            params: オプティマイザに渡すパラメータ
-            config: オプティマイザの設定を含む辞書
-            
+            params: parameters to pass to the optimizer
+            config: dictionary containing optimizer configuration
+
         Returns:
-            初期化されたオプティマイザ
+            initialized optimizer
         """
         name = config.get('name', 'Adam')
         params_config = config.get('params', {})
         
-        # 標準のオプティマイザ
+        # Standard Optimizer
         if hasattr(optim, name):
             optimizer_class = getattr(optim, name)
             return optimizer_class(params, **params_config)
         
-        # カスタムオプティマイザ
+        # Custom Optimizer
         if name == 'SAM':  # Sharpness-Aware Minimization
             return OptimizerFactory.create_sam(params, **params_config)
         elif name == 'Lookahead':
@@ -35,30 +35,30 @@ class OptimizerFactory:
             base_optimizer = OptimizerFactory.create(params, base_optimizer_config)
             return OptimizerFactory.create_lookahead(base_optimizer, **params_config)
         else:
-            raise ValueError(f"オプティマイザ {name} は利用できません")
+            raise ValueError(f"Optimizer {name} is not available")
     
     @staticmethod
     def create_sam(params, base_optimizer: str = 'Adam', rho: float = 0.05, **kwargs):
         """
-        Sharpness-Aware Minimization (SAM) オプティマイザを作成します。
-        
+        Creates a Sharpness-Aware Minimization (SAM) optimizer.
+
         Args:
-            params: オプティマイザに渡すパラメータ
-            base_optimizer: ベースとなるオプティマイザの名前
-            rho: SAMのrhoパラメータ
-            **kwargs: ベースオプティマイザに渡す追加のパラメータ
-            
+            params: Parameters to pass to the optimizer
+            base_optimizer: Name of base optimizer
+            rho: SAM rho parameters
+            **kwargs: Extra parameters to pass to the base optimizer
+
         Returns:
-            SAMオプティマイザ
-            
-        Note: 
-            SAMのPyTorch実装が必要です。ここではプレースホルダとして示しています。
-            実際の実装には外部パッケージのインポートが必要かもしれません。
+            SAM optimizer
+
+        Note:
+            A PyTorch implementation of SAM is required. It is shown here as a placeholder.
+            A real implementation may require importing external packages.
         """
         try:
             from sam import SAM
         except ImportError:
-            raise ImportError("SAMオプティマイザを使用するには、SAMパッケージのインストールが必要です。")
+            raise ImportError("To use the SAM Optimizer, you must install the SAM package.")
         
         base_optimizer_class = getattr(optim, base_optimizer)
         return SAM(params, base_optimizer_class, rho=rho, **kwargs)
@@ -66,22 +66,22 @@ class OptimizerFactory:
     @staticmethod
     def create_lookahead(base_optimizer, k: int = 5, alpha: float = 0.5):
         """
-        Lookaheadオプティマイザを作成します。
-        
+        Creates a lookahead optimizer.
+
         Args:
-            base_optimizer: ベースとなるオプティマイザ
-            k: 更新間隔
-            alpha: 古いパラメータと新しいパラメータの混合係数
-            
+            base_optimizer: Base optimizer
+            k: Update interval
+            alpha: Blend factor between old and new parameters
+
         Returns:
-            Lookaheadオプティマイザ
-            
-        Note: 
-            Lookaheadの実装が必要です。ここではプレースホルダとして示しています。
+            Lookahead optimizer
+
+        Note:
+            Lookahead implementation is required. Shown here as placeholder.
         """
         try:
             from lookahead import Lookahead
         except ImportError:
-            raise ImportError("Lookaheadオプティマイザを使用するには、Lookaheadパッケージのインストールが必要です。")
+            raise ImportError("To use the Lookahead optimizer, you need to install the Lookahead package.")
         
         return Lookahead(base_optimizer, k=k, alpha=alpha) 
