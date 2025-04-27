@@ -5,12 +5,14 @@ import torch
 import logging
 from typing import Dict, Any, Optional, List
 
+from .exp_manager import ExpManager
+
 class Trainer(ABC):
     """
     Base class for the learning process.
     All task-specific trainers must inherit from this class.
     """
-    def __init__(self, config: Dict[str, Any], exp_dir: str):
+    def __init__(self, config: Dict[str, Any], exp_dir: str, run_name:str):
         """
         Initializing the trainer
         
@@ -22,6 +24,8 @@ class Trainer(ABC):
         self.exp_dir = exp_dir
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
+        self._setup_exp_manager(run_name)
+
         # Configuring Logging
         self.logger = self._setup_logger()
         
@@ -33,7 +37,14 @@ class Trainer(ABC):
         self.scheduler = self._init_scheduler()
 
         self._init_metrics_history()
-        
+        self.last_val_results = {}
+
+    def _setup_exp_manager(self, run_name):
+        task_name = self.config.get('task_name')
+        metrics_logger_name = self.config.get('metrics_logger')
+        self.exp_manager = ExpManager(task_name, run_name, metrics_logger_name)
+
+    # NOTE: Have to change the name
     def _setup_logger(self) -> logging.Logger:
         """Configuring the Logger"""
         logger = logging.getLogger(self.__class__.__name__)
@@ -58,6 +69,9 @@ class Trainer(ABC):
         logger.addHandler(console_handler)
         
         return logger
+    
+    def _set_last_val_results(self, **kwargs):
+        self.last_val_results.update(**kwargs)
     
     @abstractmethod
     def _init_model(self) -> torch.nn.Module:
@@ -252,7 +266,7 @@ class Trainer(ABC):
         # Save as best model
         if is_best:
             torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint_best.pth'))
-            self.logger.info(f"Epoch {epoch}: Saved the cirrent best model.")
+            self.logger.info(f"Epoch {epoch}: Saved the current best model.")
     
     def load_checkpoint(self, checkpoint_path: str):
         """
@@ -297,57 +311,67 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Invalid optimization_mode: {mode}. Expected 'min' or 'max'.")
         
-        for epoch in range(1, num_epochs + 1):
-            # Training
-            train_metrics = self.train_epoch(train_dataloader)
-            self._update_metrics_history(train_metrics, epoch, 'train')
-            
-            # Log output
-            log_message = f"Epoch {epoch}/{num_epochs}, Train Loss: {train_metrics['loss']:.4f}"
-            self.logger.info(log_message)
-            
-            # Validation
-            if epoch % eval_interval == 0 or epoch % checkpoint_interval == 0:
-                val_metrics = self.validate(val_dataloader)
-                self._update_metrics_history(val_metrics, epoch, 'val')
+        with self.exp_manager:
+            for epoch in range(1, num_epochs + 1):
+                # Training
+                train_metrics = self.train_epoch(train_dataloader)
+                self._update_metrics_history(train_metrics, epoch, 'train')
+                self.exp_manager.log_metrics(train_metrics, epoch, 'train')
                 
-                # Log output of verification results
-                log_message = f"Validation, Val Loss: {val_metrics['loss']:.4f}"
-                if 'accuracy' in val_metrics:
-                    log_message += f", Val Accuracy: {val_metrics['accuracy']:.4f}"
+                # Log output
+                log_message = f"Epoch {epoch}/{num_epochs}, Train Loss: {train_metrics['loss']:.4f}"
                 self.logger.info(log_message)
                 
-                # Scheduler Updates
-                if self.scheduler is not None:
-                    # Check if ReduceLROnPlateau
-                    if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                        # Pass in the metric you want to monitor (usually validation loss)
-                        self.scheduler.step(val_metrics['loss'])
-                    else:
+                # Validation
+                if epoch % eval_interval == 0 \
+                    or epoch % checkpoint_interval == 0 \
+                    or epoch == num_epochs - 1:
+                    val_metrics, val_results = self.validate(val_dataloader)
+                    self._update_metrics_history(val_metrics, epoch, 'val')
+                    self.exp_manager.log_metrics(val_metrics, epoch, 'val')
+                    
+                    # Log output of verification results
+                    log_message = f"Validation, Val Loss: {val_metrics['loss']:.4f}"
+                    if 'accuracy' in val_metrics:
+                        log_message += f", Val Accuracy: {val_metrics['accuracy']:.4f}"
+                    self.logger.info(log_message)
+                    
+                    # Scheduler Updates
+                    if self.scheduler is not None:
+                        # Check if ReduceLROnPlateau
+                        if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                            # Pass in the metric you want to monitor (usually validation loss)
+                            self.scheduler.step(val_metrics['loss'])
+                        else:
+                            self.scheduler.step()
+                    
+                    # Determining the best model
+                    metric_name = 'loss'  # Basically, judge based on losses
+                    watch_metric = val_metrics.get(metric_name, val_metrics['loss'])
+                    
+                    is_best = False
+                    if (mode == 'min' and watch_metric < best_val_metric) or \
+                    (mode == 'max' and watch_metric > best_val_metric):
+                        best_val_metric = watch_metric
+                        is_best = True
+                    
+                    # Save the model according to your settings
+                    save_best = self.config['training'].get('save_best', True)
+                    if save_best and is_best:
+                        self.save_checkpoint(epoch, val_metrics, is_best=True)
+                    
+                    save_last = self.config['training'].get('save_last', True)
+                    if save_last:
+                        self.save_checkpoint(epoch, val_metrics, is_best=False)
+                else:
+                    # Update scheduler even if validation is not performed (except ReduceLROnPlateau)
+                    if self.scheduler is not None and not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                         self.scheduler.step()
-                
-                # Determining the best model
-                metric_name = 'loss'  # Basically, judge based on losses
-                watch_metric = val_metrics.get(metric_name, val_metrics['loss'])
-                
-                is_best = False
-                if (mode == 'min' and watch_metric < best_val_metric) or \
-                   (mode == 'max' and watch_metric > best_val_metric):
-                    best_val_metric = watch_metric
-                    is_best = True
-                
-                # Save the model according to your settings
-                save_best = self.config['training'].get('save_best', True)
-                if save_best and is_best:
-                    self.save_checkpoint(epoch, val_metrics, is_best=True)
-                
-                save_last = self.config['training'].get('save_last', True)
-                if save_last:
-                    self.save_checkpoint(epoch, val_metrics, is_best=False)
-            else:
-                # Update scheduler even if validation is not performed (except ReduceLROnPlateau)
-                if self.scheduler is not None and not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                    self.scheduler.step()
+
+            """if epoch == num_epochs - 1:
+                self._set_last_val_results(**val_results)"""
+            #self.exp_manager.log_results(**self.last_val_results)
+            self.exp_manager.log_results(**val_results)
         
         # Processing at the end of training
         self.logger.info(f"Training completed after {num_epochs} epochs.")

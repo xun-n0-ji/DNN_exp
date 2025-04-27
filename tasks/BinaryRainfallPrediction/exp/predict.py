@@ -5,7 +5,7 @@ import yaml
 import torch
 from torch.utils.data import DataLoader, Dataset
 import polars as pl
-from base import Predictor
+from core import Predictor
 
 # Experiment config
 exp_no = '00001'

@@ -1,15 +1,15 @@
-# AI学習プロセス管理フレームワーク
+# AI learning process management framework
 
-AI学習プロセスを効率的に管理するためのフレームワークです。複数のタスク、モデル、実験を階層的に整理し、再現性と柔軟性を確保します。
+A framework for efficiently managing the AI ​​learning process. It organizes multiple tasks, models, and experiments hierarchically to ensure reproducibility and flexibility.
 
-## 特徴
+## Features
 
-- 階層的なディレクトリ構造による実験管理
-- 抽象基底クラスを使用した拡張性の高い設計
-- 設定ファイルによる実験パラメータの管理
-- 実験結果の保存と比較機能
+- Experiment management with a hierarchical directory structure
+- Highly extensible design using abstract base classes
+- Management of experiment parameters with configuration files
+- Function for saving and comparing experiment results
 
-## ディレクトリ構造
+## Directory structure
 
 ```
 experiments/
@@ -31,26 +31,25 @@ experiments/
 └── ...
 ```
 
-## 主要コンポーネント
+## Main components
+- `Trainer`: Base class for the training process
+- `Experiment`: Class for managing experiments
+- `ConfigManager`: Class for managing configuration files
+- Factory classes: Classes for creating loss functions, optimizers, and schedulers
 
-- `Trainer`: 学習プロセスの基本クラス
-- `Experiment`: 実験を管理するクラス
-- `ConfigManager`: 設定ファイルを管理するクラス
-- ファクトリクラス群: 損失関数、オプティマイザ、スケジューラを作成するクラス
+## Usage
 
-## 使用方法
+### Basic usage
 
-### 基本的な使い方
-
-1. Trainerクラスを継承して、タスク固有のトレーナーを作成
-2. 設定ファイルを作成
-3. run_experiment.pyを使用して実験を実行
+1. Inherit the Trainer class to create a task-specific trainer
+2. Create a configuration file
+3. Run the experiment using run_experiment.py
 
 ```bash
 python run_experiment.py --task task1 --model model1 --exp exp001 --trainer_class CustomTrainer --base_config examples/default_config.yaml
 ```
 
-### カスタムトレーナーの作成
+### Create a custom trainer
 
 ```python
 from trainer import Trainer
@@ -58,26 +57,26 @@ import torch.nn as nn
 
 class CustomTrainer(Trainer):
     def _init_model(self) -> nn.Module:
-        # モデルの初期化処理を実装
+        # Implement model initialization
         ...
-    
+
     def train_epoch(self, dataloader):
-        # 1エポックの学習処理を実装
+        # Implement training for one epoch
         ...
-    
+
     def validate(self, dataloader):
-        # 検証処理を実装
+        # Implement validation
         ...
-    
+
     def create_dataloaders(self):
-        # データローダーの作成処理を実装
+        # Implement data loader creation
         ...
 ```
 
-### 設定ファイルの例
+### Example of config file
 
 ```yaml
-# モデル設定
+# Model config
 model:
   name: SimpleModel
   params:
@@ -85,14 +84,14 @@ model:
     hidden_dim: 128
     output_dim: 2
 
-# オプティマイザ
+# Optimizer
 optimizer:
   name: Adam
   params:
     lr: 0.001
     weight_decay: 0.0001
 
-# 学習率スケジューラ
+# Learning rate scheduler
 scheduler:
   name: ReduceLROnPlateau
   params:
@@ -101,33 +100,33 @@ scheduler:
     patience: 5
 ```
 
-## プロジェクト構成
+## Project Configuration
 
 ```
 .
-├── config_utils.py    # 設定管理ユーティリティ
-├── experiment.py      # 実験管理クラス
-├── models/            # モデル定義
-├── run_experiment.py  # 実験実行スクリプト
-├── trainer.py         # 学習プロセス基底クラス
-├── trainers/          # タスク固有のトレーナー
-└── utils/             # ユーティリティ関数
+├── config_utils.py   # Config management utilities
+├── experiment.py     # Experiment management classes
+├── models/           # Model definitions
+├── run_experiment.py # Experiment execution script
+├── trainer.py        # Training process base class
+├── trainers/         # Task-specific trainers
+└── utils/            # Utility functions
 ```
 
 ## 拡張方法
 
-1. 新しいトレーナーを追加する場合:
-   - trainersディレクトリに新しいトレーナークラスを作成
-   - Trainerクラスを継承して必要なメソッドを実装
+1. If you are adding a new trainer:
+   - Create a new trainer class in the trainers directory
+   - Inherit the Trainer class and implement the required methods
 
-2. 新しいモデルを追加する場合:
-   - modelsディレクトリに新しいモデルクラスを作成
-   - from_config静的メソッドを実装すると便利
+2. If you are adding a new model:
+   - Create a new model class in the models directory
+   - It is useful to implement the from_config static method
 
-3. 新しい損失関数やオプティマイザを追加する場合:
-   - utils/criterion_factory.py または utils/optimizer_factory.py に追加
+3. If you are adding a new loss function or optimizer:
+   - Add to utils/criterion_factory.py or utils/optimizer_factory.py
 
-## 要件
+## Requirements
 
 - Python 3.6+
 - PyTorch 1.0+

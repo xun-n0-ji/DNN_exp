@@ -1,5 +1,7 @@
 # 降雨予測の基本設定ファイル
 
+task_name: BinaryRainfallPrediction
+
 # モデル設定
 model:
   module: tasks.BinaryRainfallPrediction.models.rainfall_model
@@ -27,6 +29,8 @@ training:
   save_best: true
   save_last: true
   resume_training: false
+
+metrics_logger: ClassificationMetricsLogger
 
 # 損失関数
 criterion:

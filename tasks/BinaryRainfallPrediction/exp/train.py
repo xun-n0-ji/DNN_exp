@@ -5,39 +5,40 @@ from importlib import import_module
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import polars as pl
 import numpy as np
 from torch.utils.data import DataLoader, Dataset, random_split
 import yaml
 from sklearn.preprocessing import StandardScaler
 
-from base import Trainer
+from core import Trainer
 
 exp_no = '00001'
 run_no = '00001'
-exp_dir = Path(__file__).parent / f'exp{exp_no}' / f'run{run_no}'
-config_filepath = exp_dir / 'config.yaml'
+
+RUN_NAME = f'run{run_no}'
+EXP_DIR = Path(__file__).parent / f'exp{exp_no}' / RUN_NAME
+config_filepath = EXP_DIR / 'config.yaml'
 
 class RainfallDataset(Dataset):
     """
-    降雨予測のためのデータセット
+    Rainfall prediction dataset
     """
     def __init__(self, csv_file, transform=None):
         self.df = pl.read_csv(csv_file)
         self.transform = transform
         
-        # 日付を除外して特徴量とターゲットを抽出
-        # カラム名を確認して、正しく特徴量とターゲットを分離
+        # Extract features and targets by excluding dates
+        # Check column names to correctly separate features and targets
         self.features = self.df.drop(['id', 'day', 'rainfall']).to_numpy()
         self.targets = self.df['rainfall'].to_numpy()
         
-        # 特徴量の次元数を記録（モデル初期化時に使用）
+        # Record the number of feature dimensions (used when initializing the model)
         self.input_dim = self.features.shape[1]
         
-        # 特徴量のスケーリング
+        # Feature Scaling
         if self.transform:
-            # transform が fit_transform されているか確認
+            # Check if transform is fit_transform
             if hasattr(self.transform, 'mean_'):
                 self.features = self.transform.transform(self.features)
             else:
@@ -47,7 +48,7 @@ class RainfallDataset(Dataset):
         return len(self.df)
     
     def __getitem__(self, idx):
-        # 特徴量とターゲットをテンソルに変換
+        # Convert features and targets to tensors
         features = torch.tensor(self.features[idx], dtype=torch.float32)
         target = torch.tensor(self.targets[idx], dtype=torch.float32).view(1)
         
@@ -55,61 +56,61 @@ class RainfallDataset(Dataset):
 
 class RainfallTrainer(Trainer):
     """
-    降雨予測のためのトレーナー
+    Rainfall forecast trainer
     """
     
     def _init_model(self) -> nn.Module:
         """
-        モデルを初期化します。
-        
+        Initializes the model.
+
         Returns:
-            初期化されたモデル
+            The initialized model.
         """
         model_config = self.config
         module = import_module(model_config['model']['module'])
         model_name = model_config['model']['name']
         model_class = getattr(module, model_name)
         
-        # データセットから入力次元を自動取得
+        # Automatically obtain input dimensions from the dataset
         dataset_config = self.config.get('dataset', {})
         data_path = dataset_config.get('data_path', 'tasks/BinaryRainfallPrediction/data/train.csv')
         temp_dataset = RainfallDataset(data_path)
         input_dim = temp_dataset.input_dim
         
-        # 設定ファイルの入力次元を更新
+        # Updated input dimensions in config file
         self.config['model']['params']['input_dim'] = input_dim
         
-        # 更新した設定でモデルを初期化
+        # Initialize the model with the updated settings
         return model_class.from_config(model_config)
     
     def create_dataloaders(self) -> Tuple[DataLoader, DataLoader]:
         """
-        データローダーを作成します。
-        
+        Creates a DataLoader.
+
         Returns:
-            学習データローダーと検証データローダーのタプル
+            A tuple of training data loader and validation data loader.
         """
         dataset_config = self.config.get('dataset', {})
         batch_size = dataset_config.get('batch_size', 32)
         num_workers = dataset_config.get('num_workers', 4)
         train_ratio = dataset_config.get('train_ratio', 0.8)
         
-        # データファイルのパス
+        # Data file Path
         data_path = dataset_config.get('data_path', 'tasks/BinaryRainfallPrediction/data/train.csv')
         
-        # スケーラーの作成
+        # Creating a scaler
         scaler = StandardScaler()
         
-        # フルデータセットの作成
+        # Creating a full dataset
         full_dataset = RainfallDataset(data_path, transform=scaler)
         
-        # 学習データと検証データに分割
+        # Split into training and validation data
         train_size = int(len(full_dataset) * train_ratio)
         val_size = len(full_dataset) - train_size
         
         train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
         
-        # データローダーの作成
+        # Creating a Data Loader
         train_loader = DataLoader(
             train_dataset, 
             batch_size=batch_size, 
@@ -128,13 +129,13 @@ class RainfallTrainer(Trainer):
 
     def train_epoch(self, dataloader) -> Dict[str, float]:
         """
-        1エポックの学習を行います。
+        Train for one epoch.
         
         Args:
-            dataloader: 学習データのデータローダー
+            dataloader: Data loader for training data
             
         Returns:
-            エポックの学習結果を含む辞書
+            A dictionary containing the training results for the epoch.
         """
         self.model.train()
         total_loss = 0.0
@@ -145,26 +146,26 @@ class RainfallTrainer(Trainer):
             inputs = inputs.to(self.device)
             targets = targets.to(self.device)
             
-            # 勾配をゼロにリセット
+            # Reset gradient to zero
             self.optimizer.zero_grad()
             
-            # 順伝播
+            # Forward propagation
             outputs = self.model(inputs)
             loss = self.criterion(outputs, targets)
             
-            # 逆伝播と最適化
+            # Backpropagation and Optimization
             loss.backward()
             self.optimizer.step()
             
-            # 統計情報の更新
+            # Update statistics
             total_loss += loss.item() * inputs.size(0)
             
-            # 予測と正解の比較
+            # Comparison of predictions and correct answers
             predicted = (outputs > 0.5).float()
             correct += (predicted == targets).sum().item()
             total += targets.size(0)
         
-        # エポックの平均損失と精度を計算
+        # Calculate the average loss and accuracy for an epoch
         epoch_loss = total_loss / total
         epoch_acc = correct / total if total > 0 else 0.0
         
@@ -177,7 +178,7 @@ class RainfallTrainer(Trainer):
 
     def get_metrics_info(self) -> List[Dict[str, Any]]:
         """
-        トラッキングする評価指標の情報を返す。
+        Returns information about the metrics you are tracking.
         """
         return [
             {'name': 'loss', 'modes': ['train', 'val'], 'display_name': 'Loss'},
@@ -187,46 +188,49 @@ class RainfallTrainer(Trainer):
             {'name': 'f1', 'modes': ['val'], 'display_name': 'F1 Score'}
         ]
     
-    def validate(self, dataloader) -> Dict[str, float]:
+    def validate(self, dataloader) -> Tuple[Dict[str, float], Dict[str, Any]]:
         """
-        検証を行う。
-        
+        Performs validation.
+
         Args:
-            dataloader: 検証データのデータローダー
-            
+            dataloader: Data loader for validation data
+
         Returns:
-            検証結果を含む辞書
+            Dictionary containing validation results
         """
         self.model.eval()
         total_loss = 0.0
         correct = 0
         total = 0
         
-        all_preds = []
-        all_targets = []
+        pred_batches = []
+        target_batches = []
         
         with torch.no_grad():
             for inputs, targets in dataloader:
                 inputs = inputs.to(self.device)
                 targets = targets.to(self.device)
                 
-                # 順伝播
+                # Forward propagation
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
                 
-                # 統計情報の更新
+                # Update statistics
                 total_loss += loss.item() * inputs.size(0)
                 
-                # 予測と正解の比較
+                # Comparison of predictions and correct answers
                 predicted = (outputs > 0.5).float()
                 correct += (predicted == targets).sum().item()
                 total += targets.size(0)
                 
-                # 予測結果と正解を保存
-                all_preds.extend(predicted.cpu().numpy())
-                all_targets.extend(targets.cpu().numpy())
+                # Save prediction results and correct answers
+                pred_batches.append(predicted.cpu().numpy())
+                target_batches.append(targets.cpu().numpy())
         
-        # 精度、再現率、F1スコアの計算
+        all_preds = np.concatenate(pred_batches).ravel()
+        all_targets = np.concatenate(target_batches).ravel()
+
+        # Calculate precision, recall and F1 score
         tp = np.sum((np.array(all_targets) == 1) & (np.array(all_preds) == 1))
         fp = np.sum((np.array(all_targets) == 0) & (np.array(all_preds) == 1))
         fn = np.sum((np.array(all_targets) == 1) & (np.array(all_preds) == 0))
@@ -235,7 +239,7 @@ class RainfallTrainer(Trainer):
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
         
-        # 平均損失と精度を計算
+        # Calculate average loss and accuracy
         avg_loss = total_loss / total
         avg_acc = correct / total if total > 0 else 0.0
         
@@ -246,16 +250,21 @@ class RainfallTrainer(Trainer):
             'recall': recall,
             'f1': f1
         }
+
+        results = {
+            'preds': all_preds,
+            'targets': all_targets
+        }
         
-        return metrics
+        return metrics, results
     
     def save_predictions(self, dataloader, output_path: str):
         """
-        予測結果をCSVファイルに保存する。
-        
+        Save the prediction results to a CSV file.
+
         Args:
-            dataloader: データローダー
-            output_path: 出力ファイルパス
+            dataloader: Data loader
+            output_path: Output file path
         """
         self.model.eval()
         
@@ -266,7 +275,7 @@ class RainfallTrainer(Trainer):
             for inputs, _ in dataloader:
                 inputs = inputs.to(self.device)
                 
-                # 順伝播
+                # Forward propagation
                 outputs = self.model(inputs)
                 probs = outputs.cpu().numpy()
                 preds = (outputs > 0.5).float().cpu().numpy()
@@ -274,22 +283,22 @@ class RainfallTrainer(Trainer):
                 all_probs.extend(probs)
                 all_preds.extend(preds)
         
-        # 予測結果をDataFrameに変換
+        # Convert the prediction results to a DataFrame
         df = pl.DataFrame({
             'predicted_probability': np.array(all_probs).flatten(),
             'predicted_class': np.array(all_preds).flatten()
         })
         
-        # 出力ディレクトリがなければ作成
+        # Create the output directory if it does not exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
-        # CSVファイルに保存
+        # Save to CSV file
         df.to_csv(output_path, index=False) 
 
 def main():
     with open(config_filepath, 'r', encoding='utf-8') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
-    trainer = RainfallTrainer(config, exp_dir)
+    trainer = RainfallTrainer(config, EXP_DIR, RUN_NAME)
     train_dataloader, val_dataloader = trainer.create_dataloaders()
     trainer.train(train_dataloader, val_dataloader, config['training']['epochs'], config['training']['eval_interval'], config['training']['checkpoint_interval'])
 
