@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+from pathlib import Path
 import polars as pl
 import torch
 import logging
@@ -22,6 +23,8 @@ class Trainer(ABC):
         """
         self.config = config
         self.exp_dir = exp_dir
+        self.checkpoint_dir = Path(self.exp_dir) / 'checkpoints'
+        self.checkpoint_dir.mkdir(exist_ok=True)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         self._setup_exp_manager(run_name)
@@ -235,7 +238,7 @@ class Trainer(ABC):
         """
         raise NotImplementedError('Subclasses must implement validate.')
     
-    def save_checkpoint(self, epoch: int, metrics: Dict[str, float], is_best: bool = False):
+    def save_checkpoint(self, filename:str, epoch: int, metrics: Dict[str, float]):
         """
         Method to save checkpoint.
 
@@ -254,19 +257,10 @@ class Trainer(ABC):
         if self.scheduler is not None:
             checkpoint['scheduler_state_dict'] = self.scheduler.state_dict()
         
-        checkpoint_dir = os.path.join(self.exp_dir, 'checkpoints')
-        os.makedirs(checkpoint_dir, exist_ok=True)
         
         # Save regular checkpoints
-        torch.save(checkpoint, os.path.join(checkpoint_dir, f'checkpoint_epoch_{epoch}.pth'))
+        torch.save(checkpoint, str(self.checkpoint_dir / filename))
         
-        # Save as latest checkpoint
-        torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint_latest.pth'))
-        
-        # Save as best model
-        if is_best:
-            torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint_best.pth'))
-            self.logger.info(f"Epoch {epoch}: Saved the current best model.")
     
     def load_checkpoint(self, checkpoint_path: str):
         """
@@ -355,14 +349,17 @@ class Trainer(ABC):
                         best_val_metric = watch_metric
                         is_best = True
                     
+                    if epoch % checkpoint_interval == 0:
+                        self.save_checkpoint(f'checkpoint_epoch_{epoch}.pth', epoch, val_metrics)
+
                     # Save the model according to your settings
                     save_best = self.config['training'].get('save_best', True)
                     if save_best and is_best:
-                        self.save_checkpoint(epoch, val_metrics, is_best=True)
+                        self.save_checkpoint('checkpoint_best.pth', epoch, val_metrics)
                     
-                    save_last = self.config['training'].get('save_last', True)
-                    if save_last:
-                        self.save_checkpoint(epoch, val_metrics, is_best=False)
+                    save_latest = self.config['training'].get('save_latest', True)
+                    if save_latest:
+                        self.save_checkpoint('checkpoint_latest.pth', epoch, val_metrics)
                 else:
                     # Update scheduler even if validation is not performed (except ReduceLROnPlateau)
                     if self.scheduler is not None and not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):

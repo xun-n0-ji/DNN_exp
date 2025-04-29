@@ -7,3 +7,4 @@ torch
 scipy
 scikit-learns
 seaborn
+mlflow

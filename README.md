@@ -113,7 +113,7 @@ scheduler:
 └── utils/            # Utility functions
 ```
 
-## 拡張方法
+## How to extend
 
 1. If you are adding a new trainer:
    - Create a new trainer class in the trainers directory

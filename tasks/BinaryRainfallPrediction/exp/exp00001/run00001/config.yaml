@@ -27,7 +27,7 @@ training:
   optimization_mode: max # max or min
   checkpoint_interval: 10
   save_best: true
-  save_last: true
+  save_latest: true
   resume_training: false
 
 metrics_logger: ClassificationMetricsLogger
